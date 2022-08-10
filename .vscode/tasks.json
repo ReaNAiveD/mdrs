@@ -1,0 +1,45 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "cargo",
+            "command": "build",
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "label": "rust: cargo build",
+            "options": {
+                "env": {
+                    "VPX_STATIC": "1",
+                    "VPX_VERSION": "1.8.2",
+                    "VPX_LIB_DIR": "${workspaceFolder}\\lib\\libvpx_v1.8.2_msvc16\\lib\\x64",
+                    "VPX_INCLUDE_DIR": "${workspaceFolder}\\lib\\libvpx_v1.8.2_msvc16\\include"
+                }
+            }
+        },
+        {
+            "type": "cargo",
+            "command": "run",
+            "args": [
+                "--package",
+                "mdrs",
+                "--bin",
+                "mdrs",
+                "--",
+                "-d"
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "label": "rust: cargo run",
+            "options": {
+                "env": {
+                    "VPX_STATIC": "1",
+                    "VPX_VERSION": "1.8.2",
+                    "VPX_LIB_DIR": "${workspaceFolder}\\lib\\libvpx_v1.8.2_msvc16\\lib\\x64",
+                    "VPX_INCLUDE_DIR": "${workspaceFolder}\\lib\\libvpx_v1.8.2_msvc16\\include"
+                }
+            }
+        }
+    ]
+}

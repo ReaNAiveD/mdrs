@@ -1,0 +1,14 @@
+{
+    "rust-analyzer.runnableEnv": {
+        "VPX_STATIC": "1",
+        "VPX_VERSION": "1.8.2",
+        "VPX_LIB_DIR": "${workspaceFolder}\\lib\\libvpx_v1.8.2_msvc16\\lib\\x64",
+        "VPX_INCLUDE_DIR": "${workspaceFolder}\\lib\\libvpx_v1.8.2_msvc16\\include"
+    },
+    "rust-analyzer.server.extraEnv": {
+        "VPX_STATIC": "1",
+        "VPX_VERSION": "1.8.2",
+        "VPX_LIB_DIR": "${workspaceFolder}\\lib\\libvpx_v1.8.2_msvc16\\lib\\x64",
+        "VPX_INCLUDE_DIR": "${workspaceFolder}\\lib\\libvpx_v1.8.2_msvc16\\include"
+    }
+}
