@@ -1,3 +1,4 @@
 /lib
+/private_data
 /target
 build.ps1

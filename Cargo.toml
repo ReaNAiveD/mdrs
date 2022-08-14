@@ -11,12 +11,14 @@ license = "MIT"
 [dependencies]
 webrtc = "0.4.0"
 tokio = { version = "1.20.0", features = ["full"] }
-env_logger = "0.9.0"
+# env_logger = "0.9.0"
+log4rs = "1.1.1"
 log = "0.4.17"
 clap = "3.2.12"
 bytes = "1.1.0"
 dcv-color-primitives = "0.5.1"
-vpx-encode = "0.6.1"
+# vpx-encode = "0.6.1"
+vpx-encode = { git = "https://github.com/ReaNAiveD/vpx-encode.git", branch = "implsend" }
 chrono = "0.4.19"
 anyhow = "1.0.58"
 base64 = "0.13.0"
