@@ -46,7 +46,6 @@ pub fn load_sample_data(client: &mut mdanceio::offscreen_proxy::OffscreenProxy) 
     }
     let motion_data = std::fs::read("private_data/Alicia/MMD Motion/2 for test 1.vmd")?;
     client.load_model_motion(&motion_data);
-    client.disable_physics_simulation();
     drop(motion_data);
     Ok(())
 }
