@@ -1,5 +1,4 @@
 /lib
 /private_data
 /target
-Cargo.lock
 build.ps1

@@ -1,8 +1,9 @@
 use anyhow::Result;
 use dcv_color_primitives as dcp;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
-use std::{io::Write, time::Duration};
+use std::time::Duration;
 use tokio::sync::Notify;
 use webrtc::{
     api::{
@@ -30,23 +31,52 @@ pub fn decode(s: &str) -> Result<String> {
     Ok(s)
 }
 
-pub fn load_sample_data(client: &mut mdanceio::offscreen_proxy::OffscreenProxy) -> Result<()> {
-    let model_data = std::fs::read("private_data/Alicia/MMD/Alicia_solid.pmx")?;
-    client.load_model(&model_data);
+pub fn load_sample_data(
+    client: &mut mdanceio::offscreen_proxy::OffscreenProxy,
+    model_path: &PathBuf,
+    texture_dir: &PathBuf,
+    motion_path: Option<&PathBuf>,
+) -> Result<()> {
+    log::info!("Loading Model...");
+    let model_data = std::fs::read(model_path)?;
+    let model_handle = client.load_model(&model_data)?;
     drop(model_data);
-    let texture_dir = std::fs::read_dir("private_data/Alicia/FBX/").unwrap();
+    log::info!("Loading Texture...");
+    let texture_dir = std::fs::read_dir(texture_dir).unwrap();
     for texture_file in texture_dir {
-        let texture_file = texture_file.unwrap();
-        let texture_data = std::fs::read(texture_file.path())?;
-        client.load_texture(
-            texture_file.file_name().to_str().unwrap(),
-            &texture_data[..],
-            true,
-        );
+        let texture_first_entry = texture_file.unwrap();
+        if texture_first_entry.metadata().unwrap().is_file() {
+            let texture_data = std::fs::read(texture_first_entry.path())?;
+            client.load_texture(
+                texture_first_entry.file_name().to_str().unwrap(),
+                &texture_data,
+                false,
+            );
+        } else if texture_first_entry.metadata().unwrap().is_dir() {
+            for texture_file in std::fs::read_dir(texture_first_entry.path()).unwrap() {
+                let texture_file = texture_file.unwrap();
+                if texture_file.metadata().unwrap().is_file() {
+                    let texture_data = std::fs::read(texture_file.path())?;
+                    client.load_texture(
+                        format!(
+                            "{}/{}",
+                            texture_first_entry.file_name().to_str().unwrap(),
+                            texture_file.file_name().to_str().unwrap()
+                        )
+                        .as_str(),
+                        &texture_data,
+                        false,
+                    );
+                }
+            }
+        }
     }
-    let motion_data = std::fs::read("private_data/Alicia/MMD Motion/2 for test 1.vmd")?;
-    client.load_model_motion(&motion_data);
-    drop(motion_data);
+    client.update_texture_bind();
+    log::info!("Loading Motion...");
+    if let Some(motion_path) = motion_path {
+        let motion_data = std::fs::read(motion_path)?;
+        client.load_model_motion(&motion_data)?;
+    }
     Ok(())
 }
 
@@ -78,6 +108,27 @@ async fn main() -> Result<()> {
                 .default_value("600")
                 .value_parser(clap::value_parser!(u32).range(1..))
                 .help("Height of render target texture"),
+        )
+        .arg(
+            clap::arg!(
+                --model <FILE> "Path to the model to load"
+            )
+            .required(true)
+            .value_parser(clap::value_parser!(PathBuf)),
+        )
+        .arg(
+            clap::arg!(
+                --texture <DIR> "Path to the texture directory"
+            )
+            .required(false)
+            .value_parser(clap::value_parser!(PathBuf)),
+        )
+        .arg(
+            clap::arg!(
+                --motion <FILE> "Path to the motion to load"
+            )
+            .required(false)
+            .value_parser(clap::value_parser!(PathBuf)),
         );
 
     let matches = app.clone().get_matches();
@@ -88,6 +139,19 @@ async fn main() -> Result<()> {
     let height: u32 = *matches
         .get_one("height")
         .expect("Parameter `height` is required. ");
+    let model_path = matches
+        .get_one::<PathBuf>("model")
+        .expect("Parameter `model` is required. ")
+        .clone();
+    let texture_dir = matches
+        .get_one::<PathBuf>("texture")
+        .cloned()
+        .unwrap_or_else(|| {
+            let mut dir = model_path.clone();
+            dir.pop();
+            dir
+        });
+    let motion_path = matches.get_one::<PathBuf>("motion").cloned();
 
     if debug {
         let logfile = log4rs::append::file::FileAppender::builder()
@@ -164,7 +228,7 @@ async fn main() -> Result<()> {
     tokio::spawn(async move {
         // TODO: Interact with mdance io
         let mut client = mdanceio::offscreen_proxy::OffscreenProxy::init(width, height).await;
-        load_sample_data(&mut client)?;
+        load_sample_data(&mut client, &model_path, &texture_dir, motion_path.as_ref())?;
 
         let _ = notify_video.notified().await;
         println!("Video Notified");
@@ -261,8 +325,8 @@ async fn main() -> Result<()> {
         .await;
 
     // Wait for the offer to be pasted
-    let line = include_str!("../private_data/session_desc.txt");
-    let desc_data = decode(line)?;
+    let line = std::fs::read_to_string("private_data/session_desc.txt").expect("Please Copy Browser Session Description to private_data/session_desc.txt");
+    let desc_data = decode(&line)?;
     let offer = serde_json::from_str::<RTCSessionDescription>(&desc_data)?;
 
     peer_connection.set_remote_description(offer).await?;

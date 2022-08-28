@@ -26,6 +26,12 @@
                 "--bin",
                 "mdrs",
                 "--",
+                "--model",
+                "<Model Path>",
+                "--texture",
+                "<Texture Directory>",
+                "--motion",
+                "<Motion Path>",
                 "-d"
             ],
             "problemMatcher": [
