@@ -16,8 +16,8 @@ jobs:
     env:
       VPX_STATIC: 1
       VPX_VERSION: 1.8.2
-      VPX_LIB_DIR: lib\libvpx\lib\x64
-      VPX_INCLUDE_DIR: lib\libvpx\include
+      VPX_LIB_DIR: ${{github.workspace}}\libvpx\lib\x64
+      VPX_INCLUDE_DIR: ${{github.workspace}}\libvpx\include
 
     steps:
     - uses: actions/checkout@v3
@@ -30,7 +30,8 @@ jobs:
     - name: download and extract libvpx
       run: |
         curl -sSfL -O https://github.com/ShiftMediaProject/libvpx/releases/download/v1.8.2/libvpx_v1.8.2_msvc16.zip
-        unzip libvpx_v1.8.2_msvc16.zip -d lib\libvpx
+        mkdir ${{github.workspace}}\libvpx
+        unzip libvpx_v1.8.2_msvc16.zip -d ${{github.workspace}}\libvpx
     
     - name: Build Service
       run: cargo build --release --bin mdrs
@@ -57,6 +58,39 @@ jobs:
       run: |
         sudo apt-get update -y
         sudo apt-get install -y libvpx-dev libxcb-randr0-dev
+    
+    - name: Build Service
+      run: cargo build --release --bin mdrs
+    
+    - uses: actions/upload-artifact@v3
+      with:
+        name: mdrs_ubuntu_x86_64
+        path: target/release/examples/mdrs
+  
+  macos-x86_64:
+    env:
+      VPX_STATIC: 1
+      VPX_VERSION: 1.8.2
+      VPX_LIB_DIR: /opt/libvpx/1.8.1/lib
+      VPX_INCLUDE_DIR: /opt/libvpx/1.8.1/include
+
+    name: Build MDRS MacOS x86_64
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: caching
+      uses: Swatinem/rust-cache@v1
+      with:
+        key: macos-x86-64-b
+
+    - name: download and extract libvpx
+      run: |
+        cd /tmp
+        curl --silent -O -L https://strawlab-cdn.com/assets/libvpx-1.8.1.sierra.bottle.tar.gz
+        sudo mkdir -p /opt
+        sudo tar xvzf /tmp/libvpx-1.8.1.sierra.bottle.tar.gz -C /opt
     
     - name: Build Service
       run: cargo build --release --bin mdrs
