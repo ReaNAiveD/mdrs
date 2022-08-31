@@ -97,5 +97,5 @@ jobs:
     
     - uses: actions/upload-artifact@v3
       with:
-        name: mdrs_ubuntu_x86_64
+        name: mdrs_macos_x86_64
         path: target/release/mdrs
