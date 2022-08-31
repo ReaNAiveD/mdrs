@@ -4,6 +4,9 @@
         {
             "type": "cargo",
             "command": "build",
+            "args": [
+                "--release",
+            ],
             "problemMatcher": [
                 "$rustc"
             ],
