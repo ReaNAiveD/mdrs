@@ -39,7 +39,7 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: mdrs_windows_x86_64
-        path: target/release/examples/mdrs.exe
+        path: target/release/mdrs.exe
 
   ubuntu_x86_64:
 
@@ -65,7 +65,7 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: mdrs_ubuntu_x86_64
-        path: target/release/examples/mdrs
+        path: target/release/mdrs
   
   macos-x86_64:
     env:
@@ -98,4 +98,4 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: mdrs_ubuntu_x86_64
-        path: target/release/examples/mdrs
+        path: target/release/mdrs
